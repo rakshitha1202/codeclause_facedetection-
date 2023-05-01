@@ -1,0 +1,41 @@
+import cv0
+import numpy as np
+from tensorflow.keras.models import l_model
+
+face_cascade = cv0.CascadeClassifier('haarcascade_frontalface_default.xml')
+
+model = l_model('emotion_detection_model.h5')
+
+emotions = {
+    0: 'Angry',
+    1: 'Disgust',
+    2: 'Fear',
+    3: 'Happy',
+    4: 'Neutral',
+    5: 'Sad',
+    6: 'Surprise'
+}
+
+img = cv0.imread('input_image.jpg')
+
+gray = cv0.cvtColor(img, cv0.COLOR_BGR2GRAY)
+
+faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+
+for (a , b , c , d) in faces:
+    roi_gray = gray[b:b+d, a:a+c]
+    roi_color = img[b:b+d, a:a+c]
+
+    roi_gray = cv0.resize(roi_gray, (48, 48), interpolation=cv2.INTER_AREA)
+    roi_gray = np.reshape(roi_gray, (1, 48, 48, 1))
+
+    roi_gray = roi_gray / 255.0
+
+    predictions = model.predict(roi_gray)
+    emotion_label = np.argmax(predictions)
+
+    cv0.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
+    cv0.putText(img, emotions[emotion_label], (x, y-10), cv0.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+
+cv0.imshow('Facial Emotion Detection', img)
+cv0.waitKey()
